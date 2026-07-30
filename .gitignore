@@ -1,3 +1,13 @@
 # Local agent instructions and internal planning documents
 /AGENTS.md
 /docs/
+
+# Local source data and generated database artifacts
+/data/raw/
+/data/*.csv
+*.sql.gz
+*.dump
+
+# Local configuration and test output
+/.env
+/results/
