@@ -23,7 +23,7 @@ validates ISBN-10 format and checksum and records `B0%` values as
 - comma-separated fields
 - double-quoted fields where needed
 - one header row
-- either LF or CRLF line endings
+- CRLF line endings for the current historical snapshots
 
 The loader stages risky numeric and date fields as strings. Validation and type
 conversion happen in the transformation script, so malformed values can be
