@@ -32,5 +32,8 @@ audited instead of aborting the entire file load.
 ## Redistribution
 
 Do not commit the full snapshots until each upstream source, license, and
-redistribution condition has been documented. A small synthetic or
-redistributable sample should eventually be added for CI.
+redistribution condition has been documented.
+
+Original synthetic fixtures are committed under [`sample/`](sample/) for
+quick-start verification and future CI. They deliberately cover both accepted
+and rejected records without reproducing rows from the full snapshots.

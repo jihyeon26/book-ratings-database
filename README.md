@@ -76,10 +76,13 @@ migrations/        ordered MySQL schema migrations
   001_...          ingestion audit and lossless staging
   002_...          ISBN validation and normalized core
   003_...          serving views and workload indexes
+  004_...          hardened ISBN validation for malformed input
 /sql/load/          local bulk-load script
 /sql/transform/     validation, rejection logging, and idempotent core refresh
 /sql/quality/       integrity, reconciliation, and coverage checks
 /sql/workload/      representative analytical query
+/data/sample/       committed synthetic edge-case fixtures
+/tests/             end-to-end sample and repeatability checks
 /data/README.md     local file contract; full snapshots remain gitignored
 ```
 
@@ -90,7 +93,7 @@ files under `data/raw/`, following the contract in
 
 ## Execution Order
 
-1. Create an empty MySQL 8.4 database and apply the three files in
+1. Create an empty MySQL 8.4 database and apply all files in
    [`migrations/`](migrations/) by filename.
 2. Place the source CSV files in the gitignored `data/raw/` directory.
 3. Run [`sql/load/001_load_local_files.sql`](sql/load/001_load_local_files.sql)
@@ -102,6 +105,26 @@ files under `data/raw/`, following the contract in
 5. Run
    [`sql/quality/001_post_refresh_checks.sql`](sql/quality/001_post_refresh_checks.sql)
    and inspect the reconciliation and rejection profile.
+
+## Fast Sample Verification
+
+The committed synthetic fixtures exercise valid records, explicit rejections,
+field-level nulling, duplicate resolution, ambiguous metadata, and repeatable
+core refreshes without loading the full snapshots.
+
+From a MySQL client started at the repository root with `LOCAL INFILE` enabled:
+
+```sql
+SOURCE tests/run_sample_idempotency.sql;
+```
+
+The runner recreates only `bookdb_sample_test`, applies all migrations, loads
+the sample, transforms it twice, and compares counts plus business-key-based
+signatures. A successful run ends with:
+
+```text
+PASS: sample transformation is repeatable
+```
 
 ## Query Optimization Case
 
@@ -139,7 +162,8 @@ It is not presented as a validated recommendation model.
 - [x] Reconstruct and organize the original SQL decisions
 - [x] Implement ordered schema migrations
 - [x] Build staged loading and staging-to-core transformation
-- [ ] Add integrity, reconciliation, and idempotency tests
+- [x] Add a synthetic reconciliation and repeatability smoke test
+- [ ] Add constraint tests and GitHub Actions CI
 - [ ] Record the query-optimization case study
 - [ ] Add access-role and backup/restore checks
 - [ ] Publish verified results and diagrams
