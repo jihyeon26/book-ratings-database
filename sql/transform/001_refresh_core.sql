@@ -208,10 +208,23 @@ BEGIN
     FROM stg_amazon_rating
     WHERE ingestion_run_id = p_amazon_rating_run_id
       AND NULLIF(TRIM(review_time_raw), '') IS NOT NULL
-      AND (
-          review_time_raw NOT REGEXP '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'
-          OR STR_TO_DATE(review_time_raw, '%Y-%m-%d') IS NULL
-      );
+      AND CASE
+          WHEN review_time_raw NOT REGEXP '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'
+              THEN TRUE
+          WHEN CAST(SUBSTRING(review_time_raw, 1, 4) AS UNSIGNED)
+              NOT BETWEEN 1000 AND 9999
+              THEN TRUE
+          WHEN CAST(SUBSTRING(review_time_raw, 6, 2) AS UNSIGNED)
+              NOT BETWEEN 1 AND 12
+              THEN TRUE
+          WHEN CAST(SUBSTRING(review_time_raw, 9, 2) AS UNSIGNED) < 1
+              THEN TRUE
+          WHEN CAST(SUBSTRING(review_time_raw, 9, 2) AS UNSIGNED) > DAY(
+              LAST_DAY(CONCAT(SUBSTRING(review_time_raw, 1, 7), '-01'))
+          )
+              THEN TRUE
+          ELSE FALSE
+      END;
 
     -- Invalid optional helpfulness fields are nulled, not grounds for dropping
     -- an otherwise valid rating.
