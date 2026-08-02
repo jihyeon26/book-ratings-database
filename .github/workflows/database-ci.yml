@@ -1,0 +1,47 @@
+name: Database CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: database-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  sample-database:
+    name: MySQL 8.4 sample database
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Create local configuration
+        run: cp .env.example .env
+
+      - name: Validate Docker Compose configuration
+        run: docker compose config --quiet
+
+      - name: Start MySQL 8.4
+        run: docker compose up --detach --wait
+
+      - name: Run migrations and repeatability test
+        run: >-
+          docker compose exec --no-TTY mysql
+          sh /workspace/scripts/run-sample-test.sh
+
+      - name: Show MySQL logs on failure
+        if: failure()
+        run: docker compose logs --no-color mysql
+
+      - name: Remove CI containers and volumes
+        if: always()
+        run: docker compose down --volumes --remove-orphans
