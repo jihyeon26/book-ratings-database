@@ -1,0 +1,8 @@
+* text=auto
+
+# Files executed inside Linux containers must retain Unix line endings.
+*.sh text eol=lf
+*.sql text eol=lf
+*.csv text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
