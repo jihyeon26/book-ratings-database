@@ -33,7 +33,7 @@ jobs:
       - name: Start MySQL 8.4
         run: docker compose up --detach --wait
 
-      - name: Run migrations and repeatability test
+      - name: Run migrations and database test suite
         run: >-
           docker compose exec --no-TTY mysql
           sh /workspace/scripts/run-sample-test.sh
