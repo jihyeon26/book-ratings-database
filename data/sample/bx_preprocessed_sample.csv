@@ -1,0 +1,7 @@
+"isbn","title","author","published_year","publisher","language","genre"
+"0826414346","Database Tales","Ada Example","2005.0","Example Press","en","Technology"
+"0195153448","Relational Myths","Ben Example","2002.0","Model House","en","Science"
+"0393045218","Synthetic Edition One","Casey Example","9999.0","Edition One Press","en","Mystery"
+"0399135782","Synthetic Edition Two","Drew Example","2001.0","Edition Two Press","en","Fiction"
+"B000TEST00","Unsupported ASIN","ASIN Example","2000.0","ASIN Press","en","Other"
+"9780195153448","Unsupported ISBN-13","ISBN13 Example","2000.0","ISBN13 Press","en","Other"
