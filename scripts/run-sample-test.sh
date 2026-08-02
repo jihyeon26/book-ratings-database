@@ -18,3 +18,7 @@ printf '%s\n' \
 mysql \
     --defaults-extra-file="$defaults_file" \
     < tests/run_sample_idempotency.sql
+
+mysql \
+    --defaults-extra-file="$defaults_file" \
+    < tests/run_constraint_failures.sql
