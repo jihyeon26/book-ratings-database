@@ -154,6 +154,12 @@ signatures. It covers valid ISBN-10 records, explicit ASIN rejection, malformed
 fields, duplicate resolution, ambiguous metadata, reconciliation, and stable
 business results across two refreshes.
 
+The [constraint suite](tests/run_constraint_failures.sql) then attempts 12
+invalid writes against the core model. It verifies the exact MySQL error
+category for mandatory values, ISBN uniqueness, year and rating domains,
+helpfulness consistency, duplicate reader-book ratings, and orphan references
+in ratings and bridge tables. All supporting test records are rolled back.
+
 GitHub Actions runs this same test on every push and pull request. The workflow
 uses a read-only repository token, prints the MySQL logs if the test fails, and
 removes its temporary containers and database volume after every run.
@@ -196,7 +202,7 @@ It is not presented as a validated recommendation model.
 - [x] Build staged loading and staging-to-core transformation
 - [x] Add a synthetic reconciliation and repeatability smoke test
 - [x] Add GitHub Actions CI for the verified sample test
-- [ ] Add explicit failing-constraint tests
+- [x] Add 12 explicit failing-constraint tests
 - [ ] Record the query-optimization case study
 - [ ] Add access-role and backup/restore checks
 - [ ] Publish verified results and diagrams
