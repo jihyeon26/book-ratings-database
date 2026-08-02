@@ -1,5 +1,7 @@
 # Book Ratings Database Engineering
 
+[![Database CI](https://github.com/jihyeon26/book-ratings-database/actions/workflows/database-ci.yml/badge.svg)](https://github.com/jihyeon26/book-ratings-database/actions/workflows/database-ci.yml)
+
 Designing and optimizing a MySQL database for integrated book ratings and
 metadata.
 
@@ -17,6 +19,36 @@ It is designed to demonstrate:
 - workload-driven indexing and query-plan analysis;
 - basic database operations such as least-privilege access, aggregate refresh,
   and backup/restore verification.
+
+## Quick Start
+
+The quick start uses committed synthetic fixtures; the full source snapshots
+are not required.
+
+### Windows PowerShell
+
+```powershell
+Copy-Item .env.example .env
+.\scripts\run-sample-test.ps1
+```
+
+### macOS or Linux
+
+```bash
+cp .env.example .env
+docker compose up --detach --wait
+docker compose exec --no-TTY mysql \
+  sh /workspace/scripts/run-sample-test.sh
+```
+
+The verified run uses MySQL 8.4.10 and ends with:
+
+```text
+PASS: sample transformation is repeatable
+```
+
+Stop the local service with `docker compose down`. The named database volume
+is retained so stopping the service does not erase local state.
 
 ## Architecture
 
@@ -72,6 +104,8 @@ claim to identify a canonical work across editions.
 ## Repository Layout
 
 ```text
+compose.yaml       pinned MySQL 8.4 environment and healthcheck
+.env.example       safe local configuration template
 migrations/        ordered MySQL schema migrations
   001_...          ingestion audit and lossless staging
   002_...          ISBN validation and normalized core
@@ -83,6 +117,8 @@ migrations/        ordered MySQL schema migrations
 /sql/workload/      representative analytical query
 /data/sample/       committed synthetic edge-case fixtures
 /tests/             end-to-end sample and repeatability checks
+/scripts/           container and PowerShell test entry points
+/.github/workflows/ automated MySQL sample test for pushes and pull requests
 /data/README.md     local file contract; full snapshots remain gitignored
 ```
 
@@ -106,25 +142,21 @@ files under `data/raw/`, following the contract in
    [`sql/quality/001_post_refresh_checks.sql`](sql/quality/001_post_refresh_checks.sql)
    and inspect the reconciliation and rejection profile.
 
-## Fast Sample Verification
+## What the Sample Test Verifies
 
 The committed synthetic fixtures exercise valid records, explicit rejections,
 field-level nulling, duplicate resolution, ambiguous metadata, and repeatable
 core refreshes without loading the full snapshots.
 
-From a MySQL client started at the repository root with `LOCAL INFILE` enabled:
-
-```sql
-SOURCE tests/run_sample_idempotency.sql;
-```
-
 The runner recreates only `bookdb_sample_test`, applies all migrations, loads
 the sample, transforms it twice, and compares counts plus business-key-based
-signatures. A successful run ends with:
+signatures. It covers valid ISBN-10 records, explicit ASIN rejection, malformed
+fields, duplicate resolution, ambiguous metadata, reconciliation, and stable
+business results across two refreshes.
 
-```text
-PASS: sample transformation is repeatable
-```
+GitHub Actions runs this same test on every push and pull request. The workflow
+uses a read-only repository token, prints the MySQL logs if the test fails, and
+removes its temporary containers and database volume after every run.
 
 ## Query Optimization Case
 
@@ -158,12 +190,13 @@ It is not presented as a validated recommendation model.
 ## Implementation Status
 
 - [ ] Select and document the final public datasets
-- [ ] Add the MySQL Docker environment
+- [x] Add and verify the pinned MySQL 8.4 Docker environment
 - [x] Reconstruct and organize the original SQL decisions
 - [x] Implement ordered schema migrations
 - [x] Build staged loading and staging-to-core transformation
 - [x] Add a synthetic reconciliation and repeatability smoke test
-- [ ] Add constraint tests and GitHub Actions CI
+- [x] Add GitHub Actions CI for the verified sample test
+- [ ] Add explicit failing-constraint tests
 - [ ] Record the query-optimization case study
 - [ ] Add access-role and backup/restore checks
 - [ ] Publish verified results and diagrams
